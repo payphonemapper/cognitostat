@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CognitoStat | PayFoneMap System Status</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'media',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        .pulse-dot {
+            position: relative;
+        }
+        .pulse-dot::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 50%;
+            background-color: inherit;
+            animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+            opacity: 0.5;
+            z-index: -1;
+        }
+        @keyframes ping {
+            75%, 100% { transform: scale(2); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen flex flex-col transition-colors duration-200">
+
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <!-- Text Branding Only -->
+                    <span class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+                        CognitoStat
+                    </span>
+                </div>
+                <div>
+                    <button id="refreshBtn" onclick="refreshStatus()" class="group flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-600">
+                        <svg id="refreshIcon" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-white transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                            <path d="M3 3v5h5"></path>
+                        </svg>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        
+        <!-- Overall Status Banner -->
+        <div id="overallStatusBanner" class="rounded-2xl p-6 sm:p-8 mb-10 shadow-lg transition-all duration-300 transform">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div id="overallIconContainer" class="p-3 rounded-full bg-white/20">
+                        <!-- Icon injected via JS -->
+                    </div>
+                    <div>
+                        <h1 id="overallStatusText" class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Checking systems...</h1>
+                        <p id="lastUpdatedText" class="text-white/80 mt-1 text-sm font-medium">Last checked: Just now</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm border border-white/10">
+                    <span class="text-white/90 text-sm font-medium">Uptime (90 Days)</span>
+                    <span id="uptimeMetric" class="text-white font-bold text-lg">99.98%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Services Grid -->
+        <div class="space-y-8" id="servicesContainer">
+            <!-- Populated via JS -->
+        </div>
+
+        <!-- Incident History -->
+        <div class="mt-16">
+            <h2 class="text-xl font-semibold mb-6 text-gray-900 dark:text-white flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Past Incidents
+            </h2>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="divide-y divide-gray-100 dark:divide-gray-700">
+                    
+                    <!-- October Outage -->
+                    <div class="p-5 sm:p-6">
+                        <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-4">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Complete Service Outage</h3>
+                            <span class="text-sm text-gray-500 dark:text-gray-400 font-medium">Oct 16, 2025</span>
+                        </div>
+                        
+                        <!-- Messages -->
+                        <div class="grid grid-cols-1 gap-4">
+                            
+                            <!-- Resolved -->
+                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 md:p-5 border border-gray-100 dark:border-gray-700">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="flex-shrink-0 w-2.5 h-2.5 rounded-full bg-green-500"></span>
+                                    <span class="font-bold text-gray-900 dark:text-white text-sm uppercase tracking-wider">Resolved</span>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300 text-sm">The DNS and routing issues with our domain provider have been fully resolved. The PayFoneMap website and all associated services are now back online and fully operational.</p>
+                                <span class="text-xs text-gray-400 mt-3 block">Reported: Oct 16, 02:43 PM EST &bull; Resolved: Oct 16, 03:28 PM EST</span>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- July Outage -->
+                    <div class="p-5 sm:p-6">
+                        <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-4">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Email Support Services Outage</h3>
+                            <span class="text-sm text-gray-500 dark:text-gray-400 font-medium">Jul 29 - Jul 31, 2025</span>
+                        </div>
+                        
+                        <!-- Messages -->
+                        <div class="grid grid-cols-1 gap-4">
+                            
+                            <!-- Resolved & Investigating -->
+                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 md:p-5 border border-gray-100 dark:border-gray-700">
+                                <div class="flex flex-wrap items-center gap-2 mb-2">
+                                    <span class="flex-shrink-0 w-2.5 h-2.5 rounded-full bg-green-500"></span>
+                                    <span class="font-bold text-gray-900 dark:text-white text-sm uppercase tracking-wider">Resolved</span>
+                                    <span class="text-gray-400 dark:text-gray-600 font-bold mx-1">/</span>
+                                    <span class="flex-shrink-0 w-2.5 h-2.5 rounded-full bg-yellow-500"></span>
+                                    <span class="font-bold text-gray-900 dark:text-white text-sm uppercase tracking-wider">Under Investigation</span>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300 text-sm">The email outage was resolved and service has been restored to normal operations. The root cause is currently unknown and is still under investigation.</p>
+                                <span class="text-xs text-gray-400 mt-3 block">Reported: Jul 29, 05:39 PM EST &bull; Resolved: Jul 31, 07:40 AM EST</span>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-8 mt-auto">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+                Monitoring PayFoneMap Infrastructure.
+            </div>
+            <div class="flex gap-4 text-sm font-medium">
+                <a href="https://help.payfonemap.com" class="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-colors">Support</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Data Structure for PayFoneMap Services
+        const serviceGroups = [
+            {
+                id: 'main',
+                name: 'PayFoneMap',
+                description: 'Operational status for the primary website and services.',
+                services: [
+                    { name: 'Main Site', status: 'operational' },
+                    { name: 'Locator Maps', status: 'operational' },
+                    { name: 'Support Team', status: 'operational' }
+                ]
+            },
+            {
+                id: 'fonectrix',
+                name: 'Fonectrix',
+                description: 'Operational status for Fonectrix services.',
+                services: [
+                    { name: 'Web Dashboard', status: 'operational' }
+                ]
+            },
+            {
+                id: 'orangepigeonpie',
+                name: 'Orange Pigeon Pie',
+                description: 'Operational status for orangepigeonpie.lol',
+                services: [
+                    { name: 'Website (orangepigeonpie.lol)', status: 'operational' }
+                ]
+            }
+        ];
+
+        // Status Configurations
+        const statusConfig = {
+            operational: {
+                label: 'Operational',
+                icon: '<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
+                colorClass: 'text-green-500 dark:text-green-400',
+                bgClass: 'bg-green-50 dark:bg-green-500/10',
+                bannerClass: 'bg-gradient-to-r from-green-500 to-emerald-600',
+                bannerIcon: '<svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
+                overallText: 'All Systems Operational'
+            },
+            degraded: {
+                label: 'Degraded Performance',
+                icon: '<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>',
+                colorClass: 'text-yellow-500 dark:text-yellow-400',
+                bgClass: 'bg-yellow-50 dark:bg-yellow-500/10',
+                bannerClass: 'bg-gradient-to-r from-yellow-500 to-amber-600',
+                bannerIcon: '<svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>',
+                overallText: 'Partial System Degraded'
+            },
+            outage: {
+                label: 'Major Outage',
+                icon: '<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
+                colorClass: 'text-red-500 dark:text-red-400',
+                bgClass: 'bg-red-50 dark:bg-red-500/10',
+                bannerClass: 'bg-gradient-to-r from-red-500 to-rose-600',
+                bannerIcon: '<svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
+                overallText: 'Major System Outage'
+            },
+            maintenance: {
+                label: 'Under Maintenance',
+                icon: '<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>',
+                colorClass: 'text-blue-500 dark:text-blue-400',
+                bgClass: 'bg-blue-50 dark:bg-blue-500/10',
+                bannerClass: 'bg-gradient-to-r from-blue-500 to-indigo-600',
+                bannerIcon: '<svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 00-1-1H4a1 1 0 01-1-1V4a1 1 0 011-1h3a1 1 0 001-1v-1z" /></svg>',
+                overallText: 'All Systems Operational'
+            }
+        };
+
+        // UI State Variables
+        const collapsedGroups = new Set();
+        let isRefreshing = false;
+
+        // Render the page
+        function renderUI() {
+            const container = document.getElementById('servicesContainer');
+            container.innerHTML = '';
+            
+            let worstStatus = 'operational';
+            const statusPriority = { operational: 0, maintenance: 1, degraded: 2, outage: 3 };
+
+            serviceGroups.forEach(group => {
+                // Determine group worst status
+                let groupWorstStatus = 'operational';
+                group.services.forEach(svc => {
+                    if (statusPriority[svc.status] > statusPriority[groupWorstStatus]) {
+                        groupWorstStatus = svc.status;
+                    }
+                    if (statusPriority[svc.status] > statusPriority[worstStatus]) {
+                        worstStatus = svc.status;
+                    }
+                });
+
+                const isCollapsed = collapsedGroups.has(group.id);
+                const contentDisplay = isCollapsed ? 'none' : 'block';
+                const iconRotation = isCollapsed ? 'rotate-180' : '';
+
+                // Build HTML for group
+                const groupEl = document.createElement('div');
+                groupEl.className = 'bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden';
+                
+                // Group Header
+                let html = `
+                    <div class="px-5 py-4 sm:px-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/80 transition-colors" onclick="toggleGroup('${group.id}')">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">${group.name}</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">${group.description}</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="hidden sm:inline-block px-2.5 py-1 rounded-full text-xs font-medium ${statusConfig[groupWorstStatus].bgClass} ${statusConfig[groupWorstStatus].colorClass} border border-current/10">
+                                ${statusConfig[groupWorstStatus].label}
+                            </span>
+                            <svg id="icon-${group.id}" class="w-5 h-5 text-gray-400 transform transition-transform duration-200 ${iconRotation}" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div id="content-${group.id}" class="divide-y divide-gray-50 dark:divide-gray-700/50 transition-all duration-300" style="display: ${contentDisplay};">
+                `;
+
+                // Services List
+                group.services.forEach(svc => {
+                    html += `
+                        <div class="px-5 py-4 sm:px-6 flex justify-between items-center hover:bg-gray-50/30 dark:hover:bg-gray-700/20 transition-colors">
+                            <span class="text-gray-700 dark:text-gray-300 font-medium text-sm sm:text-base">${svc.name}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="${statusConfig[svc.status].colorClass}">
+                                    ${statusConfig[svc.status].icon}
+                                </span>
+                                <span class="text-sm font-medium ${statusConfig[svc.status].colorClass} hidden sm:block">
+                                    ${statusConfig[svc.status].label}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+                groupEl.innerHTML = html;
+                container.appendChild(groupEl);
+            });
+
+            updateOverallBanner(worstStatus);
+            updateTimestamp();
+        }
+
+        // Update top banner based on overall status
+        function updateOverallBanner(status) {
+            const banner = document.getElementById('overallStatusBanner');
+            const iconContainer = document.getElementById('overallIconContainer');
+            const statusText = document.getElementById('overallStatusText');
+            
+            // Remove all possible bg classes
+            banner.className = 'rounded-2xl p-6 sm:p-8 mb-10 shadow-lg transition-all duration-300 transform ' + statusConfig[status].bannerClass;
+            
+            iconContainer.innerHTML = statusConfig[status].bannerIcon;
+            statusText.innerText = statusConfig[status].overallText;
+
+            // Add pulsing effect if there is an issue
+            if (status !== 'operational' && status !== 'maintenance') {
+                iconContainer.classList.add('pulse-dot');
+            } else {
+                iconContainer.classList.remove('pulse-dot');
+            }
+        }
+
+        function updateTimestamp() {
+            const now = new Date();
+            const dateString = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+            document.getElementById('lastUpdatedText').innerText = `Last checked: ${dateString} at ${timeString}`;
+        }
+
+        function toggleGroup(groupId) {
+            const content = document.getElementById(`content-${groupId}`);
+            const icon = document.getElementById(`icon-${groupId}`);
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                icon.classList.remove('rotate-180');
+                collapsedGroups.delete(groupId); // Track state to persist during refreshes
+            } else {
+                content.style.display = 'none';
+                icon.classList.add('rotate-180');
+                collapsedGroups.add(groupId); // Track state to persist during refreshes
+            }
+        }
+
+        // Simulate refresh checking
+        function refreshStatus() {
+            if (isRefreshing) return; // Guard against rapid clicking
+            isRefreshing = true;
+
+            const refreshIcon = document.getElementById('refreshIcon');
+            refreshIcon.classList.add('animate-spin');
+            
+            // Fake delay to simulate network check
+            setTimeout(() => {
+                renderUI(); // Re-render to update timestamps
+                refreshIcon.classList.remove('animate-spin');
+                isRefreshing = false;
+            }, 800); 
+        }
+
+        // Initial Load
+        document.addEventListener('DOMContentLoaded', () => {
+            renderUI();
+            
+            // Auto refresh every 60 seconds
+            setInterval(() => {
+                refreshStatus();
+            }, 60000);
+        });
+
+    </script>
+</body>
+</html>

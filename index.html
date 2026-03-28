@@ -49,6 +49,21 @@
         @keyframes ping {
             75%, 100% { transform: scale(2); opacity: 0; }
         }
+
+        /* Modal transitions */
+        .modal-container {
+            transition: opacity 0.2s ease-out;
+        }
+        .modal-content {
+            transition: transform 0.2s ease-out;
+        }
+        .modal-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .modal-hidden .modal-content {
+            transform: scale(0.95);
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen flex flex-col transition-colors duration-200">
@@ -58,18 +73,33 @@
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center gap-3">
-                    <!-- Text Branding Only -->
                     <span class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
                         CognitoStat
                     </span>
                 </div>
-                <div>
+                <div class="flex items-center gap-1 sm:gap-2">
+                    <!-- Download Button -->
+                    <button id="downloadBtn" onclick="toggleExportModal(true)" title="Export System Data" class="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                    </button>
+                    <!-- History Button -->
+                    <button id="historyBtn" onclick="toggleModal(true)" class="group flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="hidden sm:inline">History</span>
+                    </button>
+                    <!-- Refresh Button -->
                     <button id="refreshBtn" onclick="refreshStatus()" class="group flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-600">
                         <svg id="refreshIcon" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-white transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
                             <path d="M3 3v5h5"></path>
                         </svg>
-                        Refresh
+                        <span class="hidden sm:inline">Refresh</span>
                     </button>
                 </div>
             </div>
@@ -84,88 +114,124 @@
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
                     <div id="overallIconContainer" class="p-3 rounded-full bg-white/20">
-                        <!-- Icon injected via JS -->
                     </div>
                     <div>
                         <h1 id="overallStatusText" class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Checking systems...</h1>
                         <p id="lastUpdatedText" class="text-white/80 mt-1 text-sm font-medium">Last checked: Just now</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm border border-white/10">
-                    <span class="text-white/90 text-sm font-medium">Uptime (90 Days)</span>
-                    <span id="uptimeMetric" class="text-white font-bold text-lg">99.98%</span>
-                </div>
             </div>
         </div>
 
         <!-- Services Grid -->
         <div class="space-y-8" id="servicesContainer">
-            <!-- Populated via JS -->
-        </div>
-
-        <!-- Incident History -->
-        <div class="mt-16">
-            <h2 class="text-xl font-semibold mb-6 text-gray-900 dark:text-white flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                Past Incidents
-            </h2>
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div class="divide-y divide-gray-100 dark:divide-gray-700">
-                    
-                    <!-- October Outage -->
-                    <div class="p-5 sm:p-6">
-                        <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-4">
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Complete Service Outage</h3>
-                            <span class="text-sm text-gray-500 dark:text-gray-400 font-medium">Oct 16, 2025</span>
-                        </div>
-                        
-                        <!-- Messages -->
-                        <div class="grid grid-cols-1 gap-4">
-                            
-                            <!-- Resolved -->
-                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 md:p-5 border border-gray-100 dark:border-gray-700">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="flex-shrink-0 w-2.5 h-2.5 rounded-full bg-green-500"></span>
-                                    <span class="font-bold text-gray-900 dark:text-white text-sm uppercase tracking-wider">Resolved</span>
-                                </div>
-                                <p class="text-gray-600 dark:text-gray-300 text-sm">The DNS and routing issues with our domain provider have been fully resolved. The PayFoneMap website and all associated services are now back online and fully operational.</p>
-                                <span class="text-xs text-gray-400 mt-3 block">Reported: Oct 16, 02:43 PM EST &bull; Resolved: Oct 16, 03:28 PM EST</span>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <!-- July Outage -->
-                    <div class="p-5 sm:p-6">
-                        <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-4">
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Email Support Services Outage</h3>
-                            <span class="text-sm text-gray-500 dark:text-gray-400 font-medium">Jul 29 - Jul 31, 2025</span>
-                        </div>
-                        
-                        <!-- Messages -->
-                        <div class="grid grid-cols-1 gap-4">
-                            
-                            <!-- Resolved & Investigating -->
-                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 md:p-5 border border-gray-100 dark:border-gray-700">
-                                <div class="flex flex-wrap items-center gap-2 mb-2">
-                                    <span class="flex-shrink-0 w-2.5 h-2.5 rounded-full bg-green-500"></span>
-                                    <span class="font-bold text-gray-900 dark:text-white text-sm uppercase tracking-wider">Resolved</span>
-                                    <span class="text-gray-400 dark:text-gray-600 font-bold mx-1">/</span>
-                                    <span class="flex-shrink-0 w-2.5 h-2.5 rounded-full bg-yellow-500"></span>
-                                    <span class="font-bold text-gray-900 dark:text-white text-sm uppercase tracking-wider">Under Investigation</span>
-                                </div>
-                                <p class="text-gray-600 dark:text-gray-300 text-sm">The email outage was resolved and service has been restored to normal operations. The root cause is currently unknown and is still under investigation.</p>
-                                <span class="text-xs text-gray-400 mt-3 block">Reported: Jul 29, 05:39 PM EST &bull; Resolved: Jul 31, 07:40 AM EST</span>
-                            </div>
-
-                        </div>
-                    </div>
-
-                </div>
-            </div>
         </div>
 
     </main>
+
+    <!-- Modal for Incident History -->
+    <div id="incidentsModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 modal-container modal-hidden">
+        <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onclick="toggleModal(false)"></div>
+        <div class="modal-content relative bg-white dark:bg-gray-800 w-full max-w-2xl max-h-[85vh] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-white dark:bg-gray-800 sticky top-0 z-10">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Incident History
+                    </h2>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <!-- Timezone Switcher -->
+                    <div class="flex items-center gap-2 bg-gray-100 dark:bg-gray-900 p-1 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <label class="sr-only">Timezone</label>
+                        <select id="timezoneSelect" onchange="changeTimezone(this.value)" class="bg-transparent text-xs font-bold uppercase tracking-tight text-gray-600 dark:text-gray-400 outline-none cursor-pointer px-2 py-1">
+                            <option value="America/New_York">EST</option>
+                            <option value="UTC">UTC</option>
+                            <option value="local">Local</option>
+                        </select>
+                    </div>
+                    <button onclick="toggleModal(false)" class="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="modalBody" class="overflow-y-auto p-0 flex-grow divide-y divide-gray-100 dark:divide-gray-700"></div>
+            <div class="p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 text-center">
+                <button onclick="toggleModal(false)" class="w-full sm:w-auto px-6 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                    Close History
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Export Options -->
+    <div id="exportModal" class="fixed inset-0 z-[110] flex items-center justify-center p-4 modal-container modal-hidden">
+        <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onclick="toggleExportModal(false)"></div>
+        <div class="modal-content relative bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-white dark:bg-gray-800">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Export Data Sheet
+                </h2>
+                <button onclick="toggleExportModal(false)" class="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-6">
+                <!-- Year Range Selection -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">Year Range</label>
+                    <select id="exportYear" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all text-gray-900 dark:text-white">
+                        <option value="all">All Time</option>
+                        <option value="2026">2026</option>
+                        <option value="2025">2025</option>
+                    </select>
+                </div>
+
+                <!-- Format Selection -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">File Format</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="relative cursor-pointer group">
+                            <input type="radio" name="exportFormat" value="csv" checked class="peer sr-only">
+                            <div class="flex items-center justify-center gap-2 p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl peer-checked:border-brand-500 peer-checked:bg-brand-50 dark:peer-checked:bg-brand-900/20 peer-checked:text-brand-600 dark:peer-checked:text-brand-400 transition-all">
+                                <span class="text-sm font-bold">CSV</span>
+                            </div>
+                        </label>
+                        <label class="relative cursor-pointer group">
+                            <input type="radio" name="exportFormat" value="json" class="peer sr-only">
+                            <div class="flex items-center justify-center gap-2 p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl peer-checked:border-brand-500 peer-checked:bg-brand-50 dark:peer-checked:bg-brand-900/20 peer-checked:text-brand-600 dark:peer-checked:text-brand-400 transition-all">
+                                <span class="text-sm font-bold">JSON</span>
+                            </div>
+                        </label>
+                        <label class="relative cursor-pointer group">
+                            <input type="radio" name="exportFormat" value="txt" class="peer sr-only">
+                            <div class="flex items-center justify-center gap-2 p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl peer-checked:border-brand-500 peer-checked:bg-brand-50 dark:peer-checked:bg-brand-900/20 peer-checked:text-brand-600 dark:peer-checked:text-brand-400 transition-all">
+                                <span class="text-sm font-bold">TXT</span>
+                            </div>
+                        </label>
+                        <label class="relative cursor-pointer group">
+                            <input type="radio" name="exportFormat" value="pdf" class="peer sr-only">
+                            <div class="flex items-center justify-center gap-2 p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl peer-checked:border-brand-500 peer-checked:bg-brand-50 dark:peer-checked:bg-brand-900/20 peer-checked:text-brand-600 dark:peer-checked:text-brand-400 transition-all">
+                                <span class="text-sm font-bold">PDF</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700 flex gap-3">
+                <button onclick="toggleExportModal(false)" class="flex-1 px-6 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    Cancel
+                </button>
+                <button onclick="handleExport()" class="flex-1 px-6 py-3 bg-brand-600 text-white rounded-xl text-sm font-bold hover:bg-brand-700 shadow-md shadow-brand-500/20 transition-all active:scale-95">
+                    Download
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-8 mt-auto">
@@ -179,9 +245,7 @@
         </div>
     </footer>
 
-    <!-- JavaScript Application Logic -->
     <script>
-        // Data Structure for PayFoneMap Services
         const serviceGroups = [
             {
                 id: 'main',
@@ -211,7 +275,28 @@
             }
         ];
 
-        // Status Configurations
+        // Using ISO strings for reliable timezone conversion
+        const historyData = [
+            {
+                title: "Complete Service Outage",
+                dateLabel: "Oct 16, 2025",
+                status: "Resolved",
+                statusType: "success",
+                message: "The DNS and routing issues with our domain provider have been fully resolved. The PayFoneMap website and all associated services are now back online and fully operational.",
+                reported: "2025-10-16T14:43:00-05:00", // EST (UTC-5)
+                resolved: "2025-10-16T15:28:00-05:00"   // EST (UTC-5)
+            },
+            {
+                title: "Email Support Services Outage",
+                dateLabel: "Jul 29 - Jul 31, 2025",
+                status: "Resolved / Under Review",
+                statusType: "warning",
+                message: "The email outage was resolved and service has been restored to normal operations. The root cause is currently unknown and is still under review.",
+                reported: "2025-07-29T17:39:00-04:00", // EDT (UTC-4)
+                resolved: "2025-07-31T07:40:00-04:00"   // EDT (UTC-4)
+            }
+        ];
+
         const statusConfig = {
             operational: {
                 label: 'Operational',
@@ -251,11 +336,36 @@
             }
         };
 
-        // UI State Variables
-        const collapsedGroups = new Set();
+        const expandedGroups = new Set();
         let isRefreshing = false;
+        let selectedTimezone = 'America/New_York'; // Default EST
 
-        // Render the page
+        /**
+         * Date Formatting Utility
+         */
+        function formatIncidentTime(isoString, tz) {
+            const date = new Date(isoString);
+            const options = { 
+                month: 'short', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true
+            };
+            
+            if (tz !== 'local') {
+                options.timeZone = tz;
+            }
+
+            const label = tz === 'local' ? 'Local' : (tz === 'UTC' ? 'UTC' : 'EST');
+            return `${date.toLocaleString('en-US', options)} ${label}`;
+        }
+
+        function changeTimezone(val) {
+            selectedTimezone = val;
+            renderHistory();
+        }
+
         function renderUI() {
             const container = document.getElementById('servicesContainer');
             container.innerHTML = '';
@@ -264,7 +374,6 @@
             const statusPriority = { operational: 0, maintenance: 1, degraded: 2, outage: 3 };
 
             serviceGroups.forEach(group => {
-                // Determine group worst status
                 let groupWorstStatus = 'operational';
                 group.services.forEach(svc => {
                     if (statusPriority[svc.status] > statusPriority[groupWorstStatus]) {
@@ -275,15 +384,13 @@
                     }
                 });
 
-                const isCollapsed = collapsedGroups.has(group.id);
-                const contentDisplay = isCollapsed ? 'none' : 'block';
-                const iconRotation = isCollapsed ? 'rotate-180' : '';
+                const isExpanded = expandedGroups.has(group.id);
+                const contentDisplay = isExpanded ? 'block' : 'none';
+                const iconRotation = isExpanded ? '' : 'rotate-180';
 
-                // Build HTML for group
                 const groupEl = document.createElement('div');
                 groupEl.className = 'bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden';
                 
-                // Group Header
                 let html = `
                     <div class="px-5 py-4 sm:px-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/80 transition-colors" onclick="toggleGroup('${group.id}')">
                         <div>
@@ -299,10 +406,9 @@
                             </svg>
                         </div>
                     </div>
-                    <div id="content-${group.id}" class="divide-y divide-gray-50 dark:divide-gray-700/50 transition-all duration-300" style="display: ${contentDisplay};">
+                    <div id="content-${group.id}" class="divide-y divide-gray-50 dark:divide-gray-700/50" style="display: ${contentDisplay};">
                 `;
 
-                // Services List
                 group.services.forEach(svc => {
                     html += `
                         <div class="px-5 py-4 sm:px-6 flex justify-between items-center hover:bg-gray-50/30 dark:hover:bg-gray-700/20 transition-colors">
@@ -328,19 +434,145 @@
             updateTimestamp();
         }
 
-        // Update top banner based on overall status
+        function renderHistory() {
+            const historyBody = document.getElementById('modalBody');
+            historyBody.innerHTML = '';
+            
+            historyData.forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'p-6';
+                
+                let statusHtml = '';
+                if (item.status.includes('/')) {
+                    const parts = item.status.split('/').map(p => p.trim());
+                    statusHtml = `
+                        <span class="flex-shrink-0 w-2.5 h-2.5 rounded-full bg-green-500"></span>
+                        <span class="font-bold text-gray-900 dark:text-white text-xs uppercase tracking-wider">${parts[0]}</span>
+                        <span class="text-gray-400 dark:text-gray-600 font-bold mx-1">/</span>
+                        <span class="flex-shrink-0 w-2.5 h-2.5 rounded-full bg-yellow-500"></span>
+                        <span class="font-bold text-gray-900 dark:text-white text-xs uppercase tracking-wider">${parts[1]}</span>
+                    `;
+                } else {
+                    const dotColor = item.statusType === 'success' ? 'bg-green-500' : (item.statusType === 'warning' ? 'bg-yellow-500' : 'bg-red-500');
+                    statusHtml = `
+                        <span class="flex-shrink-0 w-2.5 h-2.5 rounded-full ${dotColor}"></span>
+                        <span class="font-bold text-gray-900 dark:text-white text-xs uppercase tracking-wider">${item.status}</span>
+                    `;
+                }
+
+                itemEl.innerHTML = `
+                    <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">${item.title}</h3>
+                        <span class="text-sm text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">${item.dateLabel}</span>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-900/40 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
+                        <div class="flex flex-wrap items-center gap-2 mb-2">
+                            ${statusHtml}
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm">${item.message}</p>
+                        <span class="text-xs text-gray-400 mt-3 block">
+                            Reported: ${formatIncidentTime(item.reported, selectedTimezone)} &bull; 
+                            Resolved: ${formatIncidentTime(item.resolved, selectedTimezone)}
+                        </span>
+                    </div>
+                `;
+                historyBody.appendChild(itemEl);
+            });
+        }
+
+        /**
+         * Export Logic
+         */
+        function handleExport() {
+            const selectedYear = document.getElementById('exportYear').value;
+            const selectedFormat = document.querySelector('input[name="exportFormat"]:checked').value;
+            
+            const filteredHistory = historyData.filter(item => {
+                if (selectedYear === 'all') return true;
+                return item.reported.includes(selectedYear);
+            });
+
+            const timestamp = new Date().toISOString().split('T')[0];
+            const filename = `CognitoStat_Export_${timestamp}`;
+
+            switch (selectedFormat) {
+                case 'csv': generateCSV(filteredHistory, filename); break;
+                case 'json': generateJSON(filteredHistory, filename); break;
+                case 'txt': generateTXT(filteredHistory, filename); break;
+                case 'pdf': generatePDF(filteredHistory, filename); break;
+            }
+            
+            toggleExportModal(false);
+        }
+
+        function generateCSV(history, filename) {
+            let content = "SECTION,Group,Service,Status\n";
+            serviceGroups.forEach(group => {
+                group.services.forEach(svc => {
+                    content += `Current Status,"${group.name}","${svc.name}","${svc.status}"\n`;
+                });
+            });
+            content += "\nSECTION,Incident Title,Date,Status,Reported,Resolved\n";
+            history.forEach(item => {
+                content += `Incident History,"${item.title}","${item.dateLabel}","${item.status}","${formatIncidentTime(item.reported, selectedTimezone)}","${formatIncidentTime(item.resolved, selectedTimezone)}"\n`;
+            });
+            downloadFile(content, `${filename}.csv`, 'text/csv');
+        }
+
+        function generateJSON(history, filename) {
+            const data = {
+                exportedAt: new Date().toISOString(),
+                timezone: selectedTimezone,
+                currentStatus: serviceGroups,
+                incidentHistory: history
+            };
+            downloadFile(JSON.stringify(data, null, 4), `${filename}.json`, 'application/json');
+        }
+
+        function generateTXT(history, filename) {
+            let content = `COGNITOSTAT SYSTEM STATUS REPORT\nGenerated: ${new Date().toLocaleString()}\nTimezone: ${selectedTimezone}\n\n`;
+            content += `--- CURRENT STATUS ---\n`;
+            serviceGroups.forEach(group => {
+                content += `[${group.name}]\n`;
+                group.services.forEach(svc => content += `  - ${svc.name}: ${svc.status.toUpperCase()}\n`);
+                content += `\n`;
+            });
+            content += `--- HISTORY ---\n`;
+            history.forEach(item => {
+                content += `TITLE: ${item.title}\n`;
+                content += `TIMELINE: Reported ${formatIncidentTime(item.reported, selectedTimezone)} | Resolved ${formatIncidentTime(item.resolved, selectedTimezone)}\n`;
+                content += `MESSAGE: ${item.message}\n`;
+                content += `------------------------------------------\n`;
+            });
+            downloadFile(content, `${filename}.txt`, 'text/plain');
+        }
+
+        function generatePDF(history, filename) {
+            let content = `COGNITOSTAT OFFICIAL REPORT\n\n`;
+            content += generateTXT(history, filename); 
+            downloadFile(content, `${filename}_Printable.txt`, 'text/plain');
+            alert("Note: PDF generation in-browser is limited. A printable summary has been downloaded. You can also press Ctrl+P to save this page as a PDF directly.");
+        }
+
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
         function updateOverallBanner(status) {
             const banner = document.getElementById('overallStatusBanner');
             const iconContainer = document.getElementById('overallIconContainer');
             const statusText = document.getElementById('overallStatusText');
-            
-            // Remove all possible bg classes
             banner.className = 'rounded-2xl p-6 sm:p-8 mb-10 shadow-lg transition-all duration-300 transform ' + statusConfig[status].bannerClass;
-            
             iconContainer.innerHTML = statusConfig[status].bannerIcon;
             statusText.innerText = statusConfig[status].overallText;
-
-            // Add pulsing effect if there is an issue
             if (status !== 'operational' && status !== 'maintenance') {
                 iconContainer.classList.add('pulse-dot');
             } else {
@@ -361,40 +593,62 @@
             if (content.style.display === 'none') {
                 content.style.display = 'block';
                 icon.classList.remove('rotate-180');
-                collapsedGroups.delete(groupId); // Track state to persist during refreshes
+                expandedGroups.add(groupId);
             } else {
                 content.style.display = 'none';
                 icon.classList.add('rotate-180');
-                collapsedGroups.add(groupId); // Track state to persist during refreshes
+                expandedGroups.delete(groupId);
             }
         }
 
-        // Simulate refresh checking
         function refreshStatus() {
-            if (isRefreshing) return; // Guard against rapid clicking
+            if (isRefreshing) return;
             isRefreshing = true;
-
             const refreshIcon = document.getElementById('refreshIcon');
             refreshIcon.classList.add('animate-spin');
-            
-            // Fake delay to simulate network check
             setTimeout(() => {
-                renderUI(); // Re-render to update timestamps
+                renderUI(); 
                 refreshIcon.classList.remove('animate-spin');
                 isRefreshing = false;
             }, 800); 
         }
 
-        // Initial Load
+        function toggleModal(show) {
+            const modal = document.getElementById('incidentsModal');
+            if (show) {
+                modal.classList.remove('modal-hidden');
+                document.body.style.overflow = 'hidden';
+            } else {
+                modal.classList.add('modal-hidden');
+                document.body.style.overflow = '';
+            }
+        }
+
+        function toggleExportModal(show) {
+            const modal = document.getElementById('exportModal');
+            if (show) {
+                modal.classList.remove('modal-hidden');
+                document.body.style.overflow = 'hidden';
+            } else {
+                modal.classList.add('modal-hidden');
+                document.body.style.overflow = '';
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                toggleModal(false);
+                toggleExportModal(false);
+            }
+        });
+
         document.addEventListener('DOMContentLoaded', () => {
             renderUI();
-            
-            // Auto refresh every 60 seconds
+            renderHistory();
             setInterval(() => {
                 refreshStatus();
             }, 60000);
         });
-
     </script>
 </body>
 </html>
